@@ -12,3 +12,9 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.bp3-select-popover ul.bp3-menu {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
