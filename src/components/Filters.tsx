@@ -12,7 +12,7 @@ interface IState {
 
 class Filters extends Component<IProps, IState> {
   public state: IState = {
-    inputs: {},
+    inputs: {}
   };
 
   getFilterInputValues(inputLabel: string): string[] {
@@ -26,13 +26,11 @@ class Filters extends Component<IProps, IState> {
       .then(res => res.json())
       .then(
         result => {
-          this.setState({
-            inputs: result,
-          } as Pick<IState, keyof IState>);
+          this.setState({ inputs: result });
         },
         error => {
           console.log(error);
-        },
+        }
       );
   }
 

@@ -12,7 +12,7 @@ interface IProps {
 
 interface IState {
   values: any;
-  selection?: string
+  selection?: string;
 }
 
 interface ISelect {
@@ -21,7 +21,7 @@ interface ISelect {
 
 const renderSelect: ItemRenderer<ISelect> = (
   selectValue,
-  { handleClick, modifiers },
+  { handleClick, modifiers }
 ) => {
   if (!modifiers.matchesPredicate) {
     return null;
@@ -39,7 +39,7 @@ const renderSelect: ItemRenderer<ISelect> = (
 
 const filterSelect: ItemPredicate<ISelect> = (
   query: string,
-  selectValue: ISelect,
+  selectValue: ISelect
 ) => {
   return selectValue.value
     ? selectValue.value.toLowerCase().indexOf(query.toLowerCase()) >= 0
@@ -50,7 +50,7 @@ const ValueSelect = Select.ofType<ISelect>();
 
 class FilterInput extends PureComponent<IProps, IState> {
   public state: IState = {
-    values: this.props.values,
+    values: this.props.values
   };
 
   public constructor(props: IProps) {
@@ -65,7 +65,7 @@ class FilterInput extends PureComponent<IProps, IState> {
   private onOptionChange = (selectedOption: ISelect) => {
     this.setState({ selection: selectedOption.value });
     this.props.onFilterChange(this.props.name, selectedOption.value);
-  }
+  };
 
   render() {
     const { values, selection } = this.state;
@@ -77,8 +77,12 @@ class FilterInput extends PureComponent<IProps, IState> {
           onItemSelect={this.onOptionChange}
           itemRenderer={renderSelect}
           itemPredicate={filterSelect}
-          noResults={<MenuItem disabled={true} text="Aucun résultat." />}>
-          <Button text={selection ? selection : this.props.label} rightIcon="double-caret-vertical" />
+          noResults={<MenuItem disabled={true} text="Aucun résultat." />}
+        >
+          <Button
+            text={selection ? selection : this.props.label}
+            rightIcon="double-caret-vertical"
+          />
         </ValueSelect>
       </div>
     );

@@ -3,12 +3,12 @@ import Filters from './Filters';
 import Reco from './Reco';
 import './App.css';
 
-interface IProps {};
+interface IProps {}
 interface IState {
   compTerit: string;
   specialite: string;
   domaine: string;
-};
+}
 
 class App extends Component<IProps, IState> {
   public state: IState = {
