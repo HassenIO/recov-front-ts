@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, MenuItem } from '@blueprintjs/core';
 import { Select, ItemRenderer, ItemPredicate } from '@blueprintjs/select';
 import './FilterInput.css';
@@ -7,12 +7,7 @@ interface IProps {
   values: string[];
   name: string;
   label: string;
-  onFilterChange: any;
-}
-
-interface IState {
-  values: any;
-  selection?: string;
+  onFilterChange(name: string, value: string): void;
 }
 
 interface ISelect {
@@ -48,45 +43,39 @@ const filterSelect: ItemPredicate<ISelect> = (
 
 const ValueSelect = Select.ofType<ISelect>();
 
-class FilterInput extends PureComponent<IProps, IState> {
-  public state: IState = {
-    values: this.props.values
+const FilterInput: React.SFC<IProps> = (props: IProps) => {
+  const [values, setValues] = useState<string[]>(props.values);
+  const [selection, setSelection] = useState<string>('');
+
+  const onOptionChange = (selectedOption: ISelect) => {
+    setSelection(selectedOption.value);
+    props.onFilterChange(props.name, selectedOption.value);
   };
 
-  public constructor(props: IProps) {
-    super(props);
-    this.onOptionChange = this.onOptionChange.bind(this);
-  }
+  useEffect(
+    () => {
+      setValues(props.values);
+    },
+    [props.values]
+  );
 
-  componentWillReceiveProps(nextProps: IProps) {
-    this.setState({ values: nextProps.values });
-  }
-
-  private onOptionChange = (selectedOption: ISelect) => {
-    this.setState({ selection: selectedOption.value });
-    this.props.onFilterChange(this.props.name, selectedOption.value);
-  };
-
-  render() {
-    const { values, selection } = this.state;
-    const items = values.map((v: string) => ({ value: v }));
-    return (
-      <div className="FilterInput">
-        <ValueSelect
-          items={items}
-          onItemSelect={this.onOptionChange}
-          itemRenderer={renderSelect}
-          itemPredicate={filterSelect}
-          noResults={<MenuItem disabled={true} text="Aucun résultat." />}
-        >
-          <Button
-            text={selection ? selection : this.props.label}
-            rightIcon="double-caret-vertical"
-          />
-        </ValueSelect>
-      </div>
-    );
-  }
-}
+  return (
+    <div className="FilterInput">
+      <ValueSelect
+        items={values.map((v: string) => ({ value: v }))}
+        onItemSelect={onOptionChange}
+        itemRenderer={renderSelect}
+        itemPredicate={filterSelect}
+        noResults={<MenuItem disabled={true} text="Aucun résultat." />}
+      >
+        <Button
+          text={selection ? selection : props.label}
+          rightIcon="double-caret-vertical"
+          style={{ width: '300px' }}
+        />
+      </ValueSelect>
+    </div>
+  );
+};
 
 export default FilterInput;

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import FilterInput from './FilterInput';
 import './Filters.css';
 
@@ -6,58 +6,46 @@ interface IProps {
   onFilterChange: any;
 }
 
-interface IState {
-  inputs: any;
+interface IInputs {
+  inputsFilter: any;
 }
 
-class Filters extends Component<IProps, IState> {
-  public state: IState = {
-    inputs: {}
-  };
+const Filters: React.SFC<IProps> = (props: IProps) => {
+  const [inputs, setInputs] = useState<IInputs>({ inputsFilter: undefined });
+  const { onFilterChange } = props;
 
-  getFilterInputValues(inputLabel: string): string[] {
-    return this.state.inputs.inputsFilter
-      ? this.state.inputs.inputsFilter[inputLabel]
-      : [];
-  }
-
-  componentDidMount() {
+  useEffect(() => {
     fetch('https://v86y9ouqxb.execute-api.eu-west-1.amazonaws.com/dev/inputs')
       .then(res => res.json())
       .then(
         result => {
-          this.setState({ inputs: result });
+          setInputs(result);
         },
         error => {
           console.log(error);
         }
       );
-  }
+  });
 
-  render() {
-    return (
-      <div className="Filters">
-        <FilterInput
-          values={this.getFilterInputValues('compTerit')}
-          name="compTerit"
-          label="Compétance Territoriale"
-          onFilterChange={this.props.onFilterChange}
-        />
-        <FilterInput
-          values={this.getFilterInputValues('specialite')}
-          name="specialite"
-          label="Spécialité"
-          onFilterChange={this.props.onFilterChange}
-        />
-        <FilterInput
-          values={this.getFilterInputValues('domaine')}
-          name="domaine"
-          label="Domaine"
-          onFilterChange={this.props.onFilterChange}
-        />
-      </div>
-    );
-  }
-}
+  const getFilterInputValues = (inputLabel: string): string[] =>
+    inputs.inputsFilter ? inputs.inputsFilter[inputLabel] : [];
+
+  const genFilterInput = (name: string, label: string) => (
+    <FilterInput
+      values={getFilterInputValues(name)}
+      name={name}
+      label={label}
+      onFilterChange={onFilterChange}
+    />
+  );
+
+  return (
+    <div className="Filters">
+      {genFilterInput('compTerit', 'Compétance Territoriale')}
+      {genFilterInput('specialite', 'Spécialité')}
+      {genFilterInput('domaine', 'Domaine')}
+    </div>
+  );
+};
 
 export default Filters;

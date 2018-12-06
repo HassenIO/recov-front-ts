@@ -1,39 +1,26 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
+import IFilters from './types/IFilters';
 import Filters from './Filters';
 import Reco from './Reco';
 import './App.css';
 
-interface IProps {}
-interface IState {
-  compTerit: string;
-  specialite: string;
-  domaine: string;
-}
-
-class App extends Component<IProps, IState> {
-  public state: IState = {
+const App: React.SFC = () => {
+  const [filters, setFilters] = useState<IFilters>({
     compTerit: '',
     specialite: '',
     domaine: ''
+  });
+
+  const handleFilterChange = (name: keyof IFilters, value: string) => {
+    setFilters({ ...filters, [name]: value });
   };
 
-  constructor(props: IProps) {
-    super(props);
-    this.handleFilterChange = this.handleFilterChange.bind(this);
-  }
-
-  public handleFilterChange(name: keyof IState, value: string) {
-    this.setState({ [name]: value } as Pick<IState, keyof IState>);
-  }
-
-  render() {
-    return (
-      <div className="App">
-        <Filters onFilterChange={this.handleFilterChange} />
-        <Reco filters={this.state} />
-      </div>
-    );
-  }
-}
+  return (
+    <div className="App">
+      <Filters onFilterChange={handleFilterChange} />
+      <Reco filters={filters} />
+    </div>
+  );
+};
 
 export default App;

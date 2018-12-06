@@ -1,50 +1,59 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
+import IFilters from './types/IFilters';
 import ReactTable from 'react-table';
 import 'react-table/react-table.css';
 import './Reco.css';
 
 interface IProps {
-  filters: any;
+  filters: IFilters;
 }
 
-interface IState {
-  filters: any;
-  reco: any;
-  recoTable: any;
-  loading: boolean;
-}
-
-class Reco extends Component<IProps, IState> {
-  public state: IState = {
-    filters: {},
-    reco: [],
-    recoTable: [],
-    loading: false,
-  };
-
-  fetchReco(compTerit: string, specialite: string, domaine: string) {
-    let self = this;
-    this.setState({ loading: true } as Pick<IState, keyof IState>);
-    fetch(
-      `https://v86y9ouqxb.execute-api.eu-west-1.amazonaws.com/dev/reco?compTerit=${encodeURIComponent(
-        compTerit,
-      )}&specialite=${encodeURIComponent(
-        specialite,
-      )}&domaine=${encodeURIComponent(domaine)}`,
-    )
-      .then(res => res.json())
-      .then(res => {
-        self.setState({
-          reco: res,
-          recoTable: this.buildRecoTable(res),
-          loading: false,
-        } as Pick<IState, keyof IState>);
-      });
+const getColumns = (domaine?: string) => [
+  {
+    Header: 'Avocat',
+    accessor: 'AvocatId',
+    headerStyle: { textAlign: 'left' },
+    style: { textAlign: 'left' }
+  },
+  {
+    Header: 'Score',
+    accessor: 'Critères',
+    headerStyle: { textAlign: 'left' },
+    style: { textAlign: 'left' }
+  },
+  {
+    Header: `Nb Missions "${domaine || ''}"`,
+    accessor: 'nb_missions',
+    headerStyle: { textAlign: 'left' },
+    style: { textAlign: 'left' }
+  },
+  {
+    Header: 'Partenariat',
+    accessor: 'partenariat',
+    headerStyle: { textAlign: 'left' },
+    style: { textAlign: 'left' }
+  },
+  {
+    Header: 'Coût moyen',
+    accessor: 'cout',
+    headerStyle: { textAlign: 'left' },
+    style: { textAlign: 'left' }
   }
+];
 
-  buildRecoTable(reco: any) {
+const Reco: React.SFC<IProps> = (props: IProps) => {
+  const [filters, setFilters] = useState<IFilters>({
+    compTerit: '',
+    specialite: '',
+    domaine: ''
+  });
+  const [reco, setReco] = useState([]);
+  const [recoTable, setRecoTable] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const buildRecoTable = (reco: any) => {
     return reco.map((r: any) => {
-      const nbMissions = r[`nb_missions_${this.state.filters.domaine}`];
+      const nbMissions = r[`nb_missions_${filters.domaine}`];
       return {
         AvocatId: r.nameAvocat ? (
           <span className="avocat-name">{r.nameAvocat}</span>
@@ -59,76 +68,65 @@ class Reco extends Component<IProps, IState> {
           ) : (
             <span className="not-partner">Non partenaire</span>
           ),
-        cout: `${Math.floor(r.Côut * 100) / 100.0} €`,
+        cout: `${Math.floor(r.Côut * 100) / 100.0} €`
       };
     });
-  }
+  };
 
-  componentWillReceiveProps(nextProps: any) {
-    this.setState({ filters: nextProps.filters } as Pick<IState, keyof IState>);
-    if (
-      nextProps.filters.compTerit &&
-      nextProps.filters.specialite &&
-      nextProps.filters.domaine
+  const fetchReco = (
+    compTerit: string,
+    specialite: string,
+    domaine: string
+  ) => {
+    setLoading(true);
+    fetch(
+      `https://v86y9ouqxb.execute-api.eu-west-1.amazonaws.com/dev/reco?compTerit=${encodeURIComponent(
+        compTerit
+      )}&specialite=${encodeURIComponent(
+        specialite
+      )}&domaine=${encodeURIComponent(domaine)}`
     )
-      this.fetchReco(
-        nextProps.filters.compTerit,
-        nextProps.filters.specialite,
-        nextProps.filters.domaine,
-      );
-  }
+      .then(res => res.json())
+      .then(res => {
+        setReco(res);
+        setRecoTable(buildRecoTable(res));
+        setLoading(false);
+      });
+  };
 
-  render() {
-    const columns = [
-      {
-        Header: 'Avocat',
-        accessor: 'AvocatId',
-        headerStyle: { textAlign: 'left' },
-        style: { textAlign: 'left' },
-      },
-      {
-        Header: 'Score',
-        accessor: 'Critères',
-        headerStyle: { textAlign: 'left' },
-        style: { textAlign: 'left' },
-      },
-      {
-        Header: `Nb Missions "${this.state.filters.domaine || ''}"`,
-        accessor: 'nb_missions',
-        headerStyle: { textAlign: 'left' },
-        style: { textAlign: 'left' },
-      },
-      {
-        Header: 'Partenariat',
-        accessor: 'partenariat',
-        headerStyle: { textAlign: 'left' },
-        style: { textAlign: 'left' },
-      },
-      {
-        Header: 'Coût moyen',
-        accessor: 'cout',
-        headerStyle: { textAlign: 'left' },
-        style: { textAlign: 'left' },
-      },
-    ];
+  useEffect(
+    () => {
+      setFilters(props.filters);
+      if (
+        props.filters.compTerit &&
+        props.filters.specialite &&
+        props.filters.domaine
+      )
+        fetchReco(
+          props.filters.compTerit,
+          props.filters.specialite,
+          props.filters.domaine
+        );
+    },
+    [props.filters]
+  );
 
-    return (
-      <div className="Reco">
-        <ReactTable
-          columns={columns}
-          data={this.state.recoTable}
-          defaultPageSize={5}
-          noDataText="Aucun résultat"
-          ofText="sur"
-          rowsText="lignes"
-          previousText="Précédents"
-          nextText="Suivants"
-          loadingText="Chargement..."
-          loading={this.state.loading}
-        />
-      </div>
-    );
-  }
-}
+  return (
+    <div className="Reco">
+      <ReactTable
+        columns={getColumns(filters.domaine)}
+        data={recoTable}
+        defaultPageSize={10}
+        noDataText="Aucun résultat"
+        ofText="sur"
+        rowsText="lignes"
+        previousText="Précédents"
+        nextText="Suivants"
+        loadingText="Chargement..."
+        loading={loading}
+      />
+    </div>
+  );
+};
 
 export default Reco;
